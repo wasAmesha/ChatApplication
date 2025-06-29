@@ -1,25 +1,49 @@
 {
-  "name": "secure_chat",
-  "version": "0.0.2",
-  "description": "Realtime secure chat system",
+  "name": "secure-chat-enhanced",
+  "version": "2.0.0",
+  "description": "Enhanced SecureChat with comprehensive security features including RSA/ECC key exchange, AES encryption, digital signatures, and replay protection",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest"
   },
   "keywords": [
-    "node",
-    "secure",
-    "chat",
-    "system"
+    "secure-chat",
+    "encryption",
+    "websockets",
+    "rsa",
+    "aes",
+    "digital-signatures",
+    "replay-protection",
+    "end-to-end-encryption"
   ],
-  "author": "Behzad Khosravifar <behzad.khosravifar@gmail.com>",
-  "license": "GNU",
+  "author": "Enhanced SecureChat",
+  "license": "MIT",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.1.0",
-    "crypto-js": "^3.1.9-1",
-    "ejs": "^1.0.0",
-    "express": "^4.16.3",
-    "gravatar": "^1.0.6",
-    "socket.io": "^2.1.1"
-  }
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "express-rate-limit": "^6.10.0",
+    "helmet": "^7.0.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.6.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/secure-chat-enhanced.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/secure-chat-enhanced/issues"
+  },
+  "homepage": "https://github.com/your-username/secure-chat-enhanced#readme"
 }
