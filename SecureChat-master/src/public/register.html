@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChat - Register</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .register-container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .register-header { text-align: center; margin-bottom: 30px; }
+        .register-header h1 { color: #333; font-size: 28px; margin-bottom: 10px; }
+        .register-header p { color: #666; font-size: 14px; }
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-group i { 
+            position: absolute; 
+            left: 15px; 
+            top: 18px; /* Fixed position instead of percentage */
+            color: #666; 
+            z-index: 10; 
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .form-control { 
+            width: 100%; 
+            padding: 15px 15px 15px 45px; 
+            border: 2px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            transition: border-color 0.3s; 
+            height: 48px; /* Fixed height */
+            box-sizing: border-box;
+        }
+        .form-control:focus { outline: none; border-color: #667eea; }
+        .btn-register { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: transform 0.2s; }
+        .btn-register:hover { transform: translateY(-2px); }
+        .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-link { text-align: center; margin-top: 20px; }
+        .login-link a { color: #667eea; text-decoration: none; }
+        .alert { padding: 10px; margin-bottom: 20px; border-radius: 5px; text-align: center; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .field-hint { font-size: 12px; color: #666; margin-top: 5px; }
+        .username-valid { color: #28a745; }
+        .username-invalid { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1><i class="fas fa-user-plus"></i> Register</h1>
+            <p>Create your secure account</p>
+        </div>
+        
+        <div id="alert" class="alert" style="display: none;"></div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <i class="fas fa-user"></i>
+                <input type="text" class="form-control" id="username" placeholder="Username" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+">
+                <div id="usernameHint" class="field-hint">3-20 characters, letters, numbers, and underscores only</div>
+            </div>
+            
+            <div class="form-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" class="form-control" id="email" placeholder="Email Address" required>
+            </div>
+            
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" class="form-control" id="password" placeholder="Password" required minlength="6">
+                <div class="field-hint">Minimum 6 characters</div>
+            </div>
+            
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password" required>
+            </div>
+            
+            <button type="submit" class="btn-register" id="registerBtn">
+                <i class="fas fa-user-plus"></i> Register
+            </button>
+        </form>
+        
+        <div class="login-link">
+            Already have an account? <a href="/">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const alert = document.getElementById('alert');
+        const registerBtn = document.getElementById('registerBtn');
+        const usernameInput = document.getElementById('username');
+        const usernameHint = document.getElementById('usernameHint');
+
+        function showAlert(message, type = 'danger') {
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        // Real-time username validation
+        usernameInput.addEventListener('input', () => {
+            const username = usernameInput.value;
+            const isValid = /^[a-zA-Z0-9_]{3,20}$/.test(username);
+            
+            if (username === '') {
+                usernameHint.textContent = '3-20 characters, letters, numbers, and underscores only';
+                usernameHint.className = 'field-hint';
+            } else if (isValid) {
+                usernameHint.textContent = 'Username looks good!';
+                usernameHint.className = 'field-hint username-valid';
+            } else {
+                usernameHint.textContent = 'Invalid username format';
+                usernameHint.className = 'field-hint username-invalid';
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Client-side validation
+            if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+                showAlert('Username must be 3-20 characters and contain only letters, numbers, and underscores');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters long');
+                return;
+            }
+
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Registration successful! Redirecting to login...', 'success');
+                    setTimeout(() => window.location.href = '/', 2000);
+                } else {
+                    showAlert(data.error || 'Registration failed');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.');
+            } finally {
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> Register';
+            }
+        });
+    </script>
+</body>
+</html>

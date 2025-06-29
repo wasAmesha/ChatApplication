@@ -1,311 +1,140 @@
-<!-- # Secure Chat
+# Enhanced SecureChat
 
-Client side secure chat, based on [node.js](https://nodejs.org), [socket.io](https://socket.io/) and [asymmetric encryption](https://en.wikipedia.org/wiki/Public-key_cryptography) without open storage on server side.
+A secure, end-to-end encrypted chat application with user authentication, RSA/AES key exchange, and comprehensive security features.
 
-![loginform](https://raw.githubusercontent.com/bezzad/SecureChat/master/login.png)
+## Features
 
-![chatform](https://raw.githubusercontent.com/bezzad/SecureChat/master/chatform.png)
------------------------
+### 🔐 Security Features
 
-## How to use
+- **User Authentication**: Email/password login with JWT tokens
+- **RSA/ECC Key Exchange**: Secure public key distribution
+- **AES Message Encryption**: Fast symmetric encryption for messages
+- **Digital Signatures**: Message authenticity verification
+- **Replay Attack Prevention**: Timestamp and nonce validation
+- **Session Management**: Secure token-based sessions
 
-* install [node.js](https://nodejs.org)
-* clone this repository
-* go to `src\` folder
-* run below commands in your command line:
-    + $ npm install
-    + $ node app.js
-* open your browser and enter your server url (http://localhost)
+### 💬 Chat Features
 
------------------------
+- **Real-time Messaging**: Instant encrypted communication
+- **Online User List**: See who's available to chat
+- **Message Verification**: Visual indicators for verified messages
+- **Connection Status**: Real-time connection monitoring
 
-## References that have been used
+### 📊 Compliance & Logging
 
-* [**Node.js®**](https://nodejs.org) is a [JavaScript](http://en.wikipedia.org/wiki/JavaScript) runtime built on [Chrome's V8 JavaScript engine](https://developers.google.com/v8/).
+- **Authentication Logs**: Login/logout tracking with IP addresses
+- **Message Metadata**: Encrypted message logging for compliance
+- **Admin Endpoints**: Log viewing for administrators
 
-* [**Express.js**](https://expressjs.com/) is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.
+## Quick Setup
 
-* [**Socket.io**](https://socket.io) enables real-time bidirectional event-based communication. It works on every platform, browser or device, focusing equally on reliability and speed.
+### 1. Install Dependencies
 
-* [**jQuery**](https://jquery.com/) is a fast, small, and feature-rich JavaScript library.
-
-* [**Crypto.js**](https://github.com/brix/crypto-js) is a JavaScript library of crypto standards. Hasing and AES algorithms.
-
-* [**JSEncrypt**](https://github.com/travist/jsencrypt) is a Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.
-
-* [**Local Storage**](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) is analogous to [sessionStorage](https://developer.mozilla.org/en-US/docs/Web/API/sessionStorage), with the same same-origin rules applied, but it is persistent across sessions. `localStorage` was introduced in Firefox 3.5.
-
-* [**Gravatar**](https://github.com/emerleite/node-gravatar) a library to generate Gravatar URLs in Node.js Based on gravatar specs - `http://en.gravatar.com/site/implement/hash/` and `http://en.gravatar.com/site/implement/images/`.
-
-* [**Tchat card**](https://bootsnipp.com/snippets/0e3Ma) a Bootstrap chat theme snippet by [evarevirus](https://bootsnipp.com/evarevirus)
-
-* [**Login form**](https://colorlib.com/wp/template/login-form-v3/) a cool login form template to be used for any website and app. Made by Colorlib. -->
-
-# Enhanced SecureChat 🔐
-
-A comprehensive secure messaging application implementing the complete security protocol shown in your diagram, built with Node.js, Socket.IO, and client-side encryption.
-
-## 🚀 Security Features Implemented
-
-### 1. User Authentication (A1)
-
-- **HTTPS-based registration and login**
-- **Email + Password authentication**
-- **bcrypt password hashing** with 12 salt rounds
-- **JWT token-based session management**
-- **Rate limiting** to prevent brute force attacks
-- **Input validation** and sanitization
-
-### 2. Key Exchange Protocol (K1, K3)
-
-- **RSA 2048-bit key pair generation** (client-side)
-- **Public key upload and storage** on server
-- **Secure key exchange** between users
-- **Public key verification** and distribution
-- **Support for both RSA and ECC** (configurable)
-
-### 3. Secure Messaging (M1-M4, M6-M9)
-
-- **AES-256 symmetric encryption** for message content
-- **RSA encryption** for AES key exchange
-- **Digital signatures** using RSA private keys
-- **Timestamp verification** (5-minute window)
-- **Cryptographic nonces** for replay protection
-- **Message integrity verification**
-
-### 4. Advanced Security Measures
-
-- **Replay attack prevention** using nonce tracking
-- **Signature verification** for message authenticity
-- **Forward secrecy** with unique AES keys per message
-- **Secure key storage** (client-side only)
-- **Connection security** with Socket.IO authentication
-
-### 5. Comprehensive Logging (L)
-
-- **Authentication logs** (login/logout, IP tracking)
-- **User action logging** (join room, send message)
-- **Encrypted chat logs** (optional, compliance-ready)
-- **Security event tracking**
-- **Failed authentication monitoring**
-
-## 📋 Security Protocol Flow
-
-```
-1. User Registration (A1)
-   ├── Email + Password validation
-   ├── RSA keypair generation (client-side)
-   ├── Public key upload to server
-   └── Secure password hashing (bcrypt)
-
-2. User Authentication
-   ├── Credential verification
-   ├── JWT token generation
-   ├── Session establishment
-   └── Authentication logging
-
-3. Key Exchange (K1, K3)
-   ├── Public key retrieval
-   ├── Key verification
-   └── Secure key distribution
-
-4. Secure Messaging (M1-M9)
-   ├── AES key generation (M1)
-   ├── Message encryption with AES (M2)
-   ├── Timestamp + nonce attachment (M3)
-   ├── Digital signature generation (M4)
-   ├── AES key encryption with RSA (M6)
-   ├── Message decryption (M7)
-   ├── Signature verification (M8)
-   └── Replay protection check (M9)
-
-5. Logging & Monitoring (L)
-   ├── Authentication logs
-   ├── User activity tracking
-   └── Encrypted chat storage
+```bash
+npm install
 ```
 
-## 🛠️ Installation & Setup
+### 2. Start Server
 
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation Steps
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <your-repo-url>
-   cd secure-chat-enhanced
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Set environment variables** (optional)
-
-   ```bash
-   export JWT_SECRET="your-super-secret-jwt-key"
-   export PORT=3000
-   ```
-
-4. **Start the server**
-
-   ```bash
-   # Development mode
-   npm run dev
-
-   # Production mode
-   npm start
-   ```
-
-5. **Access the application**
-   Open your browser and navigate to `http://localhost:3000`
-
-## 🔧 Configuration
-
-### Environment Variables
-
-- `JWT_SECRET`: Secret key for JWT token signing (default: auto-generated)
-- `PORT`: Server port (default: 3000)
-- `NODE_ENV`: Environment mode (development/production)
-
-### Security Settings
-
-The application includes several configurable security features:
-
-- **Password Policy**: Minimum 8 characters (configurable)
-- **Token Expiry**: 24 hours (configurable)
-- **Rate Limiting**: 100 requests per 15 minutes
-- **Nonce Window**: 5-minute message timestamp window
-- **Key Size**: RSA 2048-bit (upgradeable to 4096-bit)
-
-## 🏗️ Architecture
-
-### Client-Side Security
-
-```javascript
-// RSA Key Generation
-generateRSAKeypair() -> { publicKey, privateKey }
-
-// Message Encryption Flow
-message -> AES encrypt -> RSA encrypt(AESKey) -> Digital Sign -> Send
-
-// Message Decryption Flow
-Receive -> Verify Signature -> RSA decrypt(AESKey) -> AES decrypt -> message
+```bash
+npm start
+# or for development
+npm run dev
 ```
 
-### Server-Side Security
+### 3. Access Application
 
-```javascript
-// Authentication Flow
-credentials -> bcrypt verify -> JWT generate -> Session create
+Open your browser to `http://localhost:3000`
 
-// Message Handling
-encrypted message -> replay check -> timestamp verify -> forward -> log
+## File Structure
+
+```
+src/
+├── app.js              # Main server file
+├── package.json        # Dependencies
+└── public/
+    ├── login.html      # Login page
+    ├── register.html   # Registration page
+    └── chat.html       # Main chat interface
 ```
 
-## 🔒 Security Features Breakdown
+## Security Implementation
 
-### Encryption Standards
+### Authentication Flow (A1)
 
-- **Symmetric**: AES-256-CBC for message content
-- **Asymmetric**: RSA-2048 for key exchange
-- **Hashing**: SHA-256 for signatures
-- **Password**: bcrypt with 12 salt rounds
+1. User registers with email/password
+2. Password hashed with bcrypt
+3. JWT token issued on successful login
+4. Token required for all chat operations
 
-### Protection Mechanisms
+### Key Exchange (K1, K3)
 
-- **Replay Protection**: Cryptographic nonces with server-side tracking
-- **MITM Protection**: Public key fingerprint verification
-- **Session Security**: JWT with secure headers
-- **Input Validation**: Comprehensive sanitization
-- **Rate Limiting**: DDoS and brute force protection
+1. Client generates RSA key pair
+2. Public key uploaded to server
+3. Server distributes public keys to other users
+4. Private keys never leave client
 
-### Privacy Features
+### Message Encryption (M1-M8)
 
-- **Forward Secrecy**: Unique AES keys per message
-- **No Plain Text Storage**: All messages encrypted end-to-end
-- **Minimal Metadata**: Only essential routing information stored
-- **Client-Side Keys**: Private keys never leave the client
+1. **M1**: Generate AES key for message
+2. **M2**: Encrypt message with AES
+3. **M3**: Add timestamp and nonce
+4. **M4**: Optionally sign with private key
+5. **M6**: Encrypt AES key with recipient's public key
+6. **M7**: Decrypt message on recipient side
+7. **M8**: Verify signature with sender's public key
+8. **M9**: Check timestamp/nonce for replay protection
 
-## 📊 API Endpoints
+### Logging (L)
 
-### Authentication
+- Authentication events (login/logout/IP)
+- Message metadata (encrypted, with nonce)
+- Optional: Full encrypted chat logs for compliance
 
-- `POST /api/register` - User registration with public key
+## API Endpoints
+
+- `POST /api/register` - User registration
 - `POST /api/login` - User authentication
-- `GET /health` - Server health check
+- `POST /api/logout` - Session termination
+- `GET /api/admin/logs` - View system logs (admin only)
 
-### Key Management
+## Socket Events
 
-- `GET /api/public-keys` - Retrieve all public keys
-- `GET /api/public-key/:userId` - Get specific user's public key
+### Client → Server
 
-### WebSocket Events
-
-- `join-room` - Join chat room
-- `secure-message` - Send encrypted message
-- `typing` - Typing indicator
+- `upload-public-key` - Share public key
 - `request-public-key` - Request user's public key
+- `send-message` - Send encrypted message
+- `get-online-users` - Get list of online users
 
-## 🔍 Security Audit Checklist
+### Server → Client
 
-- ✅ **Authentication**: Multi-factor ready, secure password policies
-- ✅ **Authorization**: JWT-based with expiration
-- ✅ **Encryption**: End-to-end with forward secrecy
-- ✅ **Key Management**: Secure generation and exchange
-- ✅ **Replay Protection**: Nonce-based prevention
-- ✅ **Input Validation**: Comprehensive sanitization
-- ✅ **Rate Limiting**: DoS protection
-- ✅ **Logging**: Comprehensive audit trail
-- ✅ **Error Handling**: No information leakage
-- ✅ **Headers Security**: Helmet.js implementation
+- `user-key-available` - New user key available
+- `receive-public-key` - Requested public key
+- `receive-message` - Incoming encrypted message
+- `online-users` - List of online users
 
-## 🚨 Security Considerations
+## Security Notes
 
-### Production Deployment
+⚠️ **Production Considerations**:
 
-1. **Use HTTPS**: Always deploy with SSL/TLS certificates
-2. **Environment Variables**: Store secrets in environment variables
-3. **Database**: Replace in-memory storage with secure database
-4. **Key Storage**: Implement secure key management system
-5. **Monitoring**: Set up security monitoring and alerts
+- Use environment variables for JWT secrets
+- Implement rate limiting
+- Add HTTPS/SSL certificates
+- Use a proper database instead of in-memory storage
+- Add input validation and sanitization
+- Implement proper admin authentication
+- Consider using WebRTC for peer-to-peer communication
 
-### Known Limitations
+## Browser Support
 
-- **Key Recovery**: No key recovery mechanism (by design)
-- **Scalability**: In-memory storage for demo purposes
-- **Mobile**: Not optimized for mobile devices
-- **File Transfer**: No encrypted file transfer support
+Requires modern browsers with support for:
 
-## 🤝 Contributing
+- WebSockets
+- Crypto API
+- Local Storage
+- ES6+ JavaScript
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+## License
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Original SecureChat by @bezzad
-- Inspired by Signal Protocol and Matrix.org security model
-- Built with security-first principles
-
-## 📞 Support
-
-For security-related questions or issues, please create an issue in the repository or contact the maintainers.
-
----
-
-**⚠️ Security Notice**: This implementation is for educational and development purposes. For production use, conduct a thorough security audit and implement additional enterprise-grade security measures.
+MIT License - See original SecureChat repository for details.

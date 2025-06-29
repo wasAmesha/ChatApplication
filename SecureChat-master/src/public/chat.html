@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChat</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f5f5f5; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+        
+        .header h1 { font-size: 24px; }
+        .header-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 20px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status { 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+        }
+        
+        .status-dot { 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+        }
+        
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        
+        .btn-logout { 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        
+        .main-container { 
+            display: flex; 
+            flex: 1; 
+            min-height: 0; /* Important for flex containers */
+            overflow: hidden;
+        }
+        
+        .sidebar { 
+            width: 300px; 
+            background: white; 
+            border-right: 1px solid #ddd; 
+            display: flex; 
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-header { 
+            padding: 20px; 
+            border-bottom: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+        
+        .logged-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logged-user::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .logged-user .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            border: 3px solid rgba(255,255,255,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logged-user .user-details {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logged-user .username {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .logged-user .user-email {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+        
+        .logged-user .online-indicator {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: #28a745;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            z-index: 2;
+        }
+        
+        .users-list { 
+            flex: 1; 
+            overflow-y: auto; 
+        }
+        
+        .user-item { 
+            padding: 15px 20px; 
+            border-bottom: 1px solid #f0f0f0; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .user-item:hover { background: #f8f9fa; }
+        .user-item.active { background: #e3f2fd; }
+        
+        .user-info { flex: 1; }
+        .user-name { font-weight: 500; }
+        .user-status { font-size: 12px; color: #666; }
+        
+        .key-status { font-size: 12px; }
+        .key-available { color: #28a745; }
+        .key-missing { color: #dc3545; }
+        
+        .chat-container { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            background: white;
+            min-width: 0; /* Prevents flex item from overflowing */
+            position: relative;
+        }
+        
+        .chat-header { 
+            padding: 20px; 
+            border-bottom: 1px solid #ddd; 
+            background: #f8f9fa;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 100;
+            width: 100%;
+        }
+        
+        .chat-header h3 {
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+        
+        .chat-encryption-status {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+        
+        .chat-encryption-status.encrypted {
+            color: #28a745;
+        }
+        
+        .chat-encryption-status.waiting {
+            color: #ff9800;
+        }
+        
+        .messages { 
+            flex: 1; 
+            padding: 20px; 
+            overflow-y: auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .message { 
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease-in;
+            width: 100%;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-sent { text-align: right; }
+        .message-received { text-align: left; }
+        
+        .message-bubble { 
+            display: inline-block; 
+            max-width: 70%; 
+            padding: 10px 15px; 
+            border-radius: 18px; 
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        
+        .message-sent .message-bubble { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+        }
+        
+        .message-received .message-bubble { 
+            background: #e9ecef; 
+            color: #333; 
+        }
+        
+        .message-time { 
+            font-size: 11px; 
+            color: #666; 
+            margin-top: 5px; 
+        }
+        
+        .message-status { 
+            font-size: 10px; 
+            margin-top: 2px; 
+        }
+        
+        .verified { color: #28a745; }
+        .unverified { color: #ffc107; }
+        
+        .message-input { 
+            display: flex; 
+            gap: 10px; 
+            padding: 20px; 
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+            background: white;
+            width: 100%;
+        }
+        
+        .message-input input { 
+            flex: 1; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .message-input input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn-send { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 25px; 
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .btn-send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-send:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .encryption-status { 
+            text-align: center; 
+            padding: 8px; 
+            background: #fff3cd; 
+            color: #856404; 
+            font-size: 12px;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        
+        .no-chat { 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            color: #666; 
+            font-size: 18px; 
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .header-info {
+                gap: 10px;
+            }
+            
+            .header-info span {
+                display: none;
+            }
+            
+            .sidebar {
+                width: 250px;
+            }
+            
+            .message-bubble {
+                max-width: 85%;
+            }
+            
+            .chat-header {
+                padding: 15px;
+                width: 100%;
+            }
+            
+            .messages {
+                padding: 15px;
+            }
+            
+            .message-input {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .chat-container {
+                flex: 1;
+                min-height: 0;
+            }
+            
+            .header-info .status span {
+                display: none;
+            }
+            
+            .message-bubble {
+                max-width: 90%;
+            }
+            
+            .chat-header {
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 10px 15px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .sidebar {
+                height: 150px;
+            }
+            
+            .sidebar-header {
+                padding: 15px;
+            }
+            
+            .user-item {
+                padding: 10px 15px;
+            }
+            
+            .chat-header {
+                padding: 10px 15px;
+                max-width: 100%;
+            }
+            
+            .messages {
+                padding: 10px 15px;
+            }
+            
+            .message-input {
+                padding: 10px 15px;
+            }
+            
+            .message-input input {
+                padding: 10px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .btn-send {
+                padding: 10px 15px;
+            }
+            
+            .message-bubble {
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-shield-alt"></i> SecureChat</h1>
+        <div class="header-info">
+            <div class="status" id="connectionStatus">
+                <div class="status-dot status-offline"></div>
+                <span>Connecting...</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logged-user">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-details">
+                        <div class="username" id="sidebarUsername">Loading...</div>
+                        <div class="user-email" id="sidebarUserEmail">Loading...</div>
+                    </div>
+                    <div class="online-indicator"></div>
+                </div>
+                <h3>Online Users</h3>
+                <div id="keyStatus" class="encryption-status" style="margin-top: 10px;">
+                    <i class="fas fa-key"></i> Generating keys...
+                </div>
+            </div>
+            <div class="users-list" id="usersList">
+                <!-- Users will be populated here -->
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div id="chatArea" class="no-chat">
+                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <div>Select a user to start chatting</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
+    <script>
+        let socket;
+        let currentChat = null;
+        let userKeys = new Map();
+        let myPrivateKey, myPublicKey;
+        let onlineUsers = new Set();
+        let currentUserData = null; // Store current user's data
+
+        // Check authentication
+        const token = localStorage.getItem('authToken');
+        const userEmail = localStorage.getItem('userEmail');
+        const username = localStorage.getItem('username'); // Get username from localStorage
+        if (!token || !userEmail) {
+            window.location.href = '/';
+        }
+
+        // Set current user data
+        currentUserData = {
+            email: userEmail,
+            username: username || userEmail.split('@')[0] // Fallback to email prefix if username not stored
+        };
+        
+        document.getElementById('sidebarUsername').textContent = currentUserData.username;
+        document.getElementById('sidebarUserEmail').textContent = currentUserData.email;
+
+        // Initialize encryption keys
+        function generateKeyPair() {
+            const crypt = new JSEncrypt({default_key_size: 1024});
+            myPrivateKey = crypt.getPrivateKey();
+            myPublicKey = crypt.getPublicKey();
+            
+            document.getElementById('keyStatus').innerHTML = '<i class="fas fa-key"></i> Keys ready - Secure communication enabled';
+            
+            // Upload public key to server
+            socket.emit('upload-public-key', {
+                publicKey: myPublicKey,
+                keyType: 'RSA'
+            });
+        }
+
+        // Initialize socket connection
+        function initSocket() {
+            socket = io({
+                auth: { token }
+            });
+
+            socket.on('connect', () => {
+                document.getElementById('connectionStatus').innerHTML = 
+                    '<div class="status-dot status-online"></div><span>Connected</span>';
+                generateKeyPair();
+                socket.emit('get-online-users');
+            });
+
+            socket.on('disconnect', () => {
+                document.getElementById('connectionStatus').innerHTML = 
+                    '<div class="status-dot status-offline"></div><span>Disconnected</span>';
+            });
+
+            socket.on('online-users', (users) => {
+                updateUsersList(users);
+            });
+
+            socket.on('user-key-available', (data) => {
+                userKeys.set(data.userId, data);
+                // Update the users list to reflect key availability
+                socket.emit('get-online-users');
+            });
+
+            socket.on('receive-public-key', (data) => {
+                userKeys.set(data.userId, data);
+            });
+
+            socket.on('receive-message', (data) => {
+                decryptAndDisplayMessage(data);
+            });
+
+            socket.on('error', (error) => {
+                console.error('Socket error:', error);
+            });
+        }
+
+        function updateUsersList(users) {
+            onlineUsers = new Set(users.map(u => u.userId));
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-item';
+                userDiv.onclick = () => selectUser(user.userId, user.username);
+                
+                // Use the actual username from server data
+                const displayUsername = user.username || user.userId.split('@')[0]; // Fallback to email prefix
+                
+                userDiv.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-name">${displayUsername}</div>
+                        <div class="user-status">Online</div>
+                    </div>
+                    <div class="key-status ${user.hasPublicKey ? 'key-available' : 'key-missing'}">
+                        <i class="fas fa-${user.hasPublicKey ? 'lock' : 'unlock-alt'}"></i>
+                        ${user.hasPublicKey ? 'Secured' : 'No Key'}
+                    </div>
+                `;
+                usersList.appendChild(userDiv);
+            });
+        }
+
+        function selectUser(userId, displayUsername) {
+            currentChat = userId;
+            
+            // Update UI
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Request user's public key if not available
+            if (!userKeys.has(userId)) {
+                socket.emit('request-public-key', userId);
+            }
+
+            // Create chat interface
+            const chatArea = document.getElementById('chatArea');
+            const hasKey = userKeys.has(userId);
+            chatArea.innerHTML = `
+                <div class="chat-header">
+                    <h3><i class="fas fa-user"></i> ${displayUsername}</h3>
+                    <div class="chat-encryption-status ${hasKey ? 'encrypted' : 'waiting'}">
+                        <i class="fas fa-shield-alt"></i> 
+                        ${hasKey ? 'End-to-end encrypted' : 'Waiting for encryption keys...'}
+                    </div>
+                </div>
+                <div class="messages" id="messages"></div>
+                <div class="message-input">
+                    <input type="text" id="messageInput" placeholder="Type your message..." 
+                           ${!hasKey ? 'disabled' : ''}>
+                    <button class="btn-send" onclick="sendMessage()" 
+                            ${!hasKey ? 'disabled' : ''}>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            `;
+
+            // Enable enter key
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message || !currentChat) return;
+
+            const userKey = userKeys.get(currentChat);
+            if (!userKey) {
+                alert('Cannot send message: Recipient\'s public key not available');
+                return;
+            }
+
+            // Generate AES key for message encryption
+            const aesKey = CryptoJS.lib.WordArray.random(256/8).toString();
+            
+            // Encrypt message with AES
+            const encryptedMessage = CryptoJS.AES.encrypt(message, aesKey).toString();
+            
+            // Encrypt AES key with recipient's RSA public key
+            const rsaEncrypt = new JSEncrypt();
+            rsaEncrypt.setPublicKey(userKey.publicKey);
+            const encryptedAESKey = rsaEncrypt.encrypt(aesKey);
+
+            // Generate timestamp and nonce
+            const timestamp = new Date().toISOString();
+            const nonce = CryptoJS.lib.WordArray.random(128/8).toString();
+
+            // Optional: Sign message with private key
+            const rsaSign = new JSEncrypt();
+            rsaSign.setPrivateKey(myPrivateKey);
+            const signature = rsaSign.sign(message + timestamp + nonce, CryptoJS.SHA256, "sha256");
+
+            // Send encrypted message
+            socket.emit('send-message', {
+                encryptedMessage,
+                encryptedAESKey,
+                timestamp,
+                nonce,
+                signature,
+                targetUserId: currentChat
+            });
+
+            // Display sent message with current user's username
+            displayMessage({
+                from: currentUserData.email,
+                fromUsername: currentUserData.username,
+                message,
+                timestamp,
+                verified: true,
+                sent: true
+            });
+
+            input.value = '';
+        }
+
+        function decryptAndDisplayMessage(data) {
+            try {
+                // Decrypt AES key with private key
+                const rsaDecrypt = new JSEncrypt();
+                rsaDecrypt.setPrivateKey(myPrivateKey);
+                const aesKey = rsaDecrypt.decrypt(data.encryptedAESKey);
+
+                if (!aesKey) {
+                    console.error('Failed to decrypt AES key');
+                    return;
+                }
+
+                // Decrypt message with AES key
+                const decryptedBytes = CryptoJS.AES.decrypt(data.encryptedMessage, aesKey);
+                const message = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+                if (!message) {
+                    console.error('Failed to decrypt message');
+                    return;
+                }
+
+                // Verify signature if present
+                let verified = false;
+                if (data.signature) {
+                    const senderKey = userKeys.get(data.from);
+                    if (senderKey) {
+                        const rsaVerify = new JSEncrypt();
+                        rsaVerify.setPublicKey(senderKey.publicKey);
+                        verified = rsaVerify.verify(message + data.timestamp + data.nonce, data.signature, CryptoJS.SHA256);
+                    }
+                }
+
+                // Check timestamp for replay attack prevention
+                const msgTime = new Date(data.timestamp).getTime();
+                const now = Date.now();
+                if (Math.abs(now - msgTime) > 300000) { // 5 minutes
+                    console.warn('Message timestamp suspicious - possible replay attack');
+                    return;
+                }
+
+                // Display message only if from current chat
+                if (data.from === currentChat) {
+                    displayMessage({
+                        from: data.from,
+                        fromUsername: data.fromUsername, // Use username from server
+                        message,
+                        timestamp: data.timestamp,
+                        verified,
+                        sent: false
+                    });
+                }
+            } catch (error) {
+                console.error('Error decrypting message:', error);
+            }
+        }
+
+        function displayMessage(data) {
+            const messagesDiv = document.getElementById('messages');
+            if (!messagesDiv) return;
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${data.sent ? 'message-sent' : 'message-received'}`;
+            
+            const time = new Date(data.timestamp).toLocaleTimeString();
+            const verificationIcon = data.verified ? 
+                '<i class="fas fa-check-circle verified"></i>' : 
+                '<i class="fas fa-exclamation-triangle unverified"></i>';
+
+            messageDiv.innerHTML = `
+                <div class="message-bubble">${data.message}</div>
+                <div class="message-time">${time}</div>
+                <div class="message-status">${verificationIcon} ${data.verified ? 'Verified' : 'Unverified'}</div>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function logout() {
+            fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).finally(() => {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('username');
+                window.location.href = '/';
+            });
+        }
+
+        // Initialize
+        initSocket();
+    </script>
+</body>
+</html>

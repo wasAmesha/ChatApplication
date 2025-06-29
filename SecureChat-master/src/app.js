@@ -1,492 +1,532 @@
-// // This is the main file of our chat app. It initializes a new 
-// // express.js instance, requires the config and routes files
-// // and listens on a port. Start the application by running
-// // 'node app.js' in your terminal
+// const express = require('express');
+// const app = express();
+// const http = require('http').createServer(app);
+// const io = require('socket.io')(http);
+// const path = require('path');
+// const bcrypt = require('bcrypt');
+// const jwt = require('jsonwebtoken');
+// const crypto = require('crypto');
 
-// var express = require('express');
-// var path = require("path");
-// var app = express();
-// var port = 80;
+// // In-memory storage (use database in production)
+// const users = new Map();
+// const usersByUsername = new Map(); // New: index users by username
+// const sessions = new Map();
+// const chatLogs = new Array();
+// const userKeys = new Map();
+// const JWT_SECRET = crypto.randomBytes(64).toString('hex');
 
-// // Initialize a new socket.io object. It is bound to 
-// // the express app, which allows them to coexist.
-// var io = require('socket.io').listen(app.listen(port));
+// app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.json());
 
+// // Routes
+// app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/login.html')));
+// app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'public/register.html')));
+// app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/chat.html')));
 
-// // ------------------- Config static directories and files ---------------
-// //
-// // Set .html as the default template extension
-// app.set('view engine', 'html');
-
-// // Initialize the ejs template engine
-// app.engine('html', require('ejs').renderFile);
-
-// // Tell express where it can find the templates
-// app.set('views', path.join(__dirname, 'client/views'));
-
-// // Make the files in the public folder available to the world
-// app.use(express.static(path.join(__dirname, 'client')));
-// // =======================================================================
-// //
-
-
-// // --------------------------- Router Config -----------------------------
-// //
-// // sets up event listeners for the two main URL 
-// // endpoints of the application - /
-// app.get('/', function (req, res) {
-// 	// Render views/chat.html
-// 	res.render('chat');
+// // Register endpoint
+// app.post('/api/register', async (req, res) => {
+//     const { username, email, password } = req.body;
+//     if (!username || !email || !password) {
+//         return res.status(400).json({ error: 'Username, email and password required' });
+//     }
+    
+//     // Check if username already exists
+//     if (usersByUsername.has(username.toLowerCase())) {
+//         return res.status(409).json({ error: 'Username already exists' });
+//     }
+    
+//     // Check if email already exists
+//     if (users.has(email.toLowerCase())) {
+//         return res.status(409).json({ error: 'Email already exists' });
+//     }
+    
+//     // Validate username (alphanumeric and underscore only, 3-20 characters)
+//     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+//         return res.status(400).json({ 
+//             error: 'Username must be 3-20 characters and contain only letters, numbers, and underscores' 
+//         });
+//     }
+    
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const userData = { 
+//         username, 
+//         email, 
+//         password: hashedPassword, 
+//         createdAt: new Date() 
+//     };
+    
+//     users.set(email.toLowerCase(), userData);
+//     usersByUsername.set(username.toLowerCase(), userData);
+    
+//     res.json({ success: true, message: 'User registered successfully' });
 // });
-// // =======================================================================
-// //
 
-// // Require the configuration and the routes files, and pass
-// // the app and io as arguments to the returned functions.
-// require('./server/server')(app, io);
+// // Login endpoint (support both email and username)
+// app.post('/api/login', async (req, res) => {
+//     const { login, password } = req.body; // 'login' can be email or username
+    
+//     let user;
+//     // Check if login is email or username
+//     if (login.includes('@')) {
+//         user = users.get(login.toLowerCase()); // Make email lookup case-insensitive
+//     } else {
+//         user = usersByUsername.get(login.toLowerCase());
+//     }
+    
+//     if (!user || !await bcrypt.compare(password, user.password)) {
+//         return res.status(401).json({ error: 'Invalid credentials' });
+//     }
+    
+//     const token = jwt.sign({ email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+//     sessions.set(token, { 
+//         email: user.email, 
+//         username: user.username,
+//         loginTime: new Date(), 
+//         ip: req.ip 
+//     });
+    
+//     // Log authentication
+//     chatLogs.push({
+//         type: 'auth',
+//         username: user.username,
+//         email: user.email,
+//         action: 'login',
+//         timestamp: new Date(),
+//         ip: req.ip
+//     });
+    
+//     res.json({ token, email: user.email, username: user.username });
+// });
 
-// console.log('Your application is running on http://localhost:' + port);
+// // Logout endpoint
+// app.post('/api/logout', (req, res) => {
+//     const token = req.headers.authorization?.split(' ')[1];
+//     if (token && sessions.has(token)) {
+//         const session = sessions.get(token);
+//         chatLogs.push({
+//             type: 'auth',
+//             username: session.username,
+//             email: session.email,
+//             action: 'logout',
+//             timestamp: new Date(),
+//             ip: req.ip
+//         });
+//         sessions.delete(token);
+//     }
+//     res.json({ success: true });
+// });
 
-// Enhanced SecureChat Server Implementation
-// app.js - Main server file
+// // Middleware to verify JWT
+// const verifyToken = (socket, next) => {
+//     const token = socket.handshake.auth.token;
+//     if (!token) return next(new Error('No token provided'));
+    
+//     try {
+//         const decoded = jwt.verify(token, JWT_SECRET);
+//         if (!sessions.has(token)) return next(new Error('Invalid session'));
+        
+//         socket.userId = decoded.email;
+//         socket.username = decoded.username;
+//         socket.token = token;
+//         next();
+//     } catch (err) {
+//         next(new Error('Invalid token'));
+//     }
+// };
+
+// io.use(verifyToken);
+
+// io.on('connection', (socket) => {
+//     console.log(`User ${socket.username} (${socket.userId}) connected`);
+    
+//     // Key exchange - Upload public key
+//     socket.on('upload-public-key', (data) => {
+//         const { publicKey, keyType } = data; // RSA/ECC
+//         userKeys.set(socket.userId, { 
+//             publicKey, 
+//             keyType, 
+//             username: socket.username,
+//             uploadedAt: new Date() 
+//         });
+        
+//         // Broadcast to other users that new key is available
+//         socket.broadcast.emit('user-key-available', {
+//             userId: socket.userId,
+//             username: socket.username,
+//             publicKey,
+//             keyType
+//         });
+        
+//         console.log(`Public key uploaded for ${socket.username}`);
+//     });
+    
+//     // Request public key of another user
+//     socket.on('request-public-key', (targetUserId) => {
+//         const userKey = userKeys.get(targetUserId);
+//         if (userKey) {
+//             socket.emit('receive-public-key', {
+//                 userId: targetUserId,
+//                 username: userKey.username,
+//                 publicKey: userKey.publicKey,
+//                 keyType: userKey.keyType
+//             });
+//         }
+//     });
+    
+//     // Enhanced messaging with timestamp, nonce, and optional signature
+//     socket.on('send-message', (data) => {
+//         const {
+//             encryptedMessage,
+//             encryptedAESKey,
+//             timestamp,
+//             nonce,
+//             signature,
+//             targetUserId
+//         } = data;
+        
+//         // Verify timestamp to prevent replay attacks (within 5 minutes)
+//         const now = Date.now();
+//         const msgTime = new Date(timestamp).getTime();
+//         if (Math.abs(now - msgTime) > 300000) {
+//             socket.emit('error', 'Message timestamp invalid');
+//             return;
+//         }
+        
+//         // Store message with metadata
+//         const messageData = {
+//             from: socket.userId,
+//             fromUsername: socket.username,
+//             to: targetUserId,
+//             encryptedMessage,
+//             encryptedAESKey,
+//             timestamp,
+//             nonce,
+//             signature,
+//             serverTimestamp: new Date()
+//         };
+        
+//         // Log encrypted message (compliance)
+//         chatLogs.push({
+//             type: 'message',
+//             from: socket.userId,
+//             fromUsername: socket.username,
+//             to: targetUserId,
+//             timestamp: new Date(),
+//             encrypted: true,
+//             nonce: nonce
+//         });
+        
+//         // Forward to target user
+//         const targetSocket = [...io.sockets.sockets.values()]
+//             .find(s => s.userId === targetUserId);
+            
+//         if (targetSocket) {
+//             targetSocket.emit('receive-message', messageData);
+//         }
+//     });
+    
+//     // Get list of online users with their public keys
+//     socket.on('get-online-users', () => {
+//         const onlineUsers = [...io.sockets.sockets.values()]
+//             .map(s => ({
+//                 userId: s.userId,
+//                 username: s.username,
+//                 hasPublicKey: userKeys.has(s.userId)
+//             }))
+//             .filter(user => user.userId !== socket.userId);
+            
+//         socket.emit('online-users', onlineUsers);
+//     });
+    
+//     socket.on('disconnect', () => {
+//         console.log(`User ${socket.username} disconnected`);
+        
+//         // Log disconnection
+//         chatLogs.push({
+//             type: 'auth',
+//             username: socket.username,
+//             email: socket.userId,
+//             action: 'disconnect',
+//             timestamp: new Date()
+//         });
+//     });
+// });
+
+// // Admin endpoint to view logs (for compliance)
+// app.get('/api/admin/logs', (req, res) => {
+//     // In production, add proper admin authentication
+//     res.json(chatLogs.slice(-100)); // Last 100 entries
+// });
+
+// const PORT = process.env.PORT || 3001;
+// http.listen(PORT, () => {
+//     console.log(`SecureChat server running on port ${PORT}`);
+// });
+
 
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
+const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 const path = require('path');
-const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
-const cors = require('cors');
+const crypto = require('crypto');
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
+// In-memory storage (use database in production)
+const users = new Map();
+const usersByUsername = new Map(); // Maps lowercase username -> original username
+const sessions = new Map();
+const chatLogs = new Array();
+const userKeys = new Map();
+const JWT_SECRET = crypto.randomBytes(64).toString('hex');
 
-// Security configurations
-app.use(helmet());
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// Rate limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
-
-// Static files
 app.use(express.static(path.join(__dirname, 'public')));
-
-// JWT Secret (In production, use environment variable)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
-const SALT_ROUNDS = 12;
-
-// In-memory storage (In production, use proper database)
-class SecureChatStore {
-    constructor() {
-        this.users = new Map(); // email -> user data
-        this.sessions = new Map(); // sessionId -> user data
-        this.publicKeys = new Map(); // userId -> public key
-        this.authLogs = new Map(); // userId -> auth logs
-        this.chatLogs = new Map(); // roomId -> encrypted chat logs
-        this.activeConnections = new Map(); // socketId -> user data
-        this.nonces = new Set(); // Used nonces for replay protection
-    }
-
-    // User management
-    async registerUser(email, password, publicKey) {
-        if (this.users.has(email)) {
-            throw new Error('User already exists');
-        }
-
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-        const userId = crypto.randomUUID();
-        
-        const user = {
-            id: userId,
-            email,
-            password: hashedPassword,
-            publicKey,
-            createdAt: new Date(),
-            lastLogin: null,
-            isActive: false
-        };
-
-        this.users.set(email, user);
-        this.publicKeys.set(userId, publicKey);
-        this.authLogs.set(userId, []);
-
-        return { id: userId, email };
-    }
-
-    async authenticateUser(email, password, ip) {
-        const user = this.users.get(email);
-        if (!user) {
-            throw new Error('Invalid credentials');
-        }
-
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) {
-            // Log failed attempt
-            this.logAuthAttempt(user.id, ip, false);
-            throw new Error('Invalid credentials');
-        }
-
-        // Update user
-        user.lastLogin = new Date();
-        user.isActive = true;
-
-        // Log successful login
-        this.logAuthAttempt(user.id, ip, true);
-
-        return user;
-    }
-
-    logAuthAttempt(userId, ip, success) {
-        const logs = this.authLogs.get(userId) || [];
-        logs.push({
-            ip,
-            success,
-            timestamp: new Date(),
-            action: success ? 'login' : 'failed_login'
-        });
-        
-        // Keep only last 50 logs
-        if (logs.length > 50) {
-            logs.splice(0, logs.length - 50);
-        }
-        
-        this.authLogs.set(userId, logs);
-    }
-
-    logUserAction(userId, action, ip, details = {}) {
-        const logs = this.authLogs.get(userId) || [];
-        logs.push({
-            ip,
-            action,
-            timestamp: new Date(),
-            details
-        });
-        
-        if (logs.length > 100) {
-            logs.splice(0, logs.length - 100);
-        }
-        
-        this.authLogs.set(userId, logs);
-    }
-
-    // Public key management
-    getPublicKey(userId) {
-        return this.publicKeys.get(userId);
-    }
-
-    getAllPublicKeys() {
-        return Object.fromEntries(this.publicKeys);
-    }
-
-    // Nonce management for replay protection
-    isNonceUsed(nonce) {
-        return this.nonces.has(nonce);
-    }
-
-    addNonce(nonce) {
-        this.nonces.add(nonce);
-        
-        // Clean old nonces (keep only last 10000)
-        if (this.nonces.size > 10000) {
-            const noncesArray = Array.from(this.nonces);
-            this.nonces.clear();
-            noncesArray.slice(-5000).forEach(n => this.nonces.add(n));
-        }
-    }
-
-    // Chat logging (encrypted)
-    logEncryptedMessage(roomId, encryptedMessage, metadata) {
-        const logs = this.chatLogs.get(roomId) || [];
-        logs.push({
-            ...metadata,
-            encryptedMessage,
-            timestamp: new Date()
-        });
-        
-        // Keep only last 1000 messages per room
-        if (logs.length > 1000) {
-            logs.splice(0, logs.length - 1000);
-        }
-        
-        this.chatLogs.set(roomId, logs);
-    }
-}
-
-const store = new SecureChatStore();
-
-// Middleware to verify JWT token
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid token' });
-        }
-        req.user = user;
-        next();
-    });
-};
+app.use(express.json());
 
 // Routes
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/login.html')));
+app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'public/register.html')));
+app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/chat.html')));
 
-// Registration endpoint
+// Register endpoint
 app.post('/api/register', async (req, res) => {
-    try {
-        const { email, password, publicKey } = req.body;
-        
-        if (!email || !password || !publicKey) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
-        }
-
-        // Validate password strength
-        if (password.length < 8) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters' });
-        }
-
-        const user = await store.registerUser(email, password, publicKey);
-        res.json({ success: true, user: { id: user.id, email: user.email } });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+        return res.status(400).json({ error: 'Username, email and password required' });
     }
-});
-
-// Login endpoint
-app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const ip = req.ip || req.connection.remoteAddress;
-
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password required' });
-        }
-
-        const user = await store.authenticateUser(email, password, ip);
-        
-        // Generate JWT token
-        const token = jwt.sign(
-            { id: user.id, email: user.email },
-            JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
-        res.json({
-            success: true,
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                publicKey: user.publicKey
-            }
+    
+    // Check if username already exists (case-insensitive)
+    if (usersByUsername.has(username.toLowerCase())) {
+        return res.status(409).json({ error: 'Username already exists' });
+    }
+    
+    // Check if email already exists
+    if (users.has(email.toLowerCase())) {
+        return res.status(409).json({ error: 'Email already exists' });
+    }
+    
+    // Validate username (alphanumeric and underscore only, 3-20 characters)
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+        return res.status(400).json({ 
+            error: 'Username must be 3-20 characters and contain only letters, numbers, and underscores' 
         });
-    } catch (error) {
-        res.status(401).json({ error: error.message });
-	}
-});
-
-// Get public keys endpoint
-app.get('/api/public-keys', authenticateToken, (req, res) => {
-    const publicKeys = store.getAllPublicKeys();
-    res.json({ publicKeys });
-});
-
-// Get specific user's public key
-app.get('/api/public-key/:userId', authenticateToken, (req, res) => {
-    const { userId } = req.params;
-    const publicKey = store.getPublicKey(userId);
-    
-    if (!publicKey) {
-        return res.status(404).json({ error: 'User not found' });
     }
     
-    res.json({ publicKey });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userData = { 
+        username, // Store original username with capitalization
+        email, 
+        password: hashedPassword, 
+        createdAt: new Date() 
+    };
+    
+    users.set(email.toLowerCase(), userData);
+    // Map lowercase username to user data for lookup
+    usersByUsername.set(username.toLowerCase(), userData);
+    
+    res.json({ success: true, message: 'User registered successfully' });
 });
 
-// Socket.IO connection handling
-io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
-    if (!token) {
-        return next(new Error('Authentication error'));
+// Login endpoint (support both email and username)
+app.post('/api/login', async (req, res) => {
+    const { login, password } = req.body; // 'login' can be email or username
+    
+    let user;
+    // Check if login is email or username
+    if (login.includes('@')) {
+        user = users.get(login.toLowerCase()); // Make email lookup case-insensitive
+    } else {
+        // Get user data directly from username mapping
+        user = usersByUsername.get(login.toLowerCase());
     }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return next(new Error('Authentication error'));
-        }
-        socket.user = user;
-        next();
+    
+    if (!user || !await bcrypt.compare(password, user.password)) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    const token = jwt.sign({ email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+    sessions.set(token, { 
+        email: user.email, 
+        username: user.username, // Original username with capitalization
+        loginTime: new Date(), 
+        ip: req.ip 
     });
+    
+    // Log authentication
+    chatLogs.push({
+        type: 'auth',
+        username: user.username, // Original username with capitalization
+        email: user.email,
+        action: 'login',
+        timestamp: new Date(),
+        ip: req.ip
+    });
+    
+    res.json({ token, email: user.email, username: user.username });
 });
+
+// Logout endpoint
+app.post('/api/logout', (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token && sessions.has(token)) {
+        const session = sessions.get(token);
+        chatLogs.push({
+            type: 'auth',
+            username: session.username, // Original username with capitalization
+            email: session.email,
+            action: 'logout',
+            timestamp: new Date(),
+            ip: req.ip
+        });
+        sessions.delete(token);
+    }
+    res.json({ success: true });
+});
+
+// Middleware to verify JWT
+const verifyToken = (socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) return next(new Error('No token provided'));
+    
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (!sessions.has(token)) return next(new Error('Invalid session'));
+        
+        socket.userId = decoded.email;
+        socket.username = decoded.username; // Original username with capitalization
+        socket.token = token;
+        next();
+    } catch (err) {
+        next(new Error('Invalid token'));
+    }
+};
+
+io.use(verifyToken);
 
 io.on('connection', (socket) => {
-    console.log(`User ${socket.user.email} connected`);
+    console.log(`User ${socket.username} (${socket.userId}) connected`);
     
-    const ip = socket.handshake.address;
-    store.logUserAction(socket.user.id, 'socket_connect', ip);
-    store.activeConnections.set(socket.id, socket.user);
-
-    // Handle joining chat rooms
-    socket.on('join-room', (roomId) => {
-        socket.join(roomId);
-        store.logUserAction(socket.user.id, 'join_room', ip, { roomId });
+    // Key exchange - Upload public key
+    socket.on('upload-public-key', (data) => {
+        const { publicKey, keyType } = data; // RSA/ECC
+        userKeys.set(socket.userId, { 
+            publicKey, 
+            keyType, 
+            username: socket.username, // Original username with capitalization
+            uploadedAt: new Date() 
+        });
         
-        // Notify others in the room
-        socket.to(roomId).emit('user-joined', {
-            userId: socket.user.id,
-            email: socket.user.email,
-            publicKey: store.getPublicKey(socket.user.id)
+        // Broadcast to other users that new key is available
+        socket.broadcast.emit('user-key-available', {
+            userId: socket.userId,
+            username: socket.username, // Original username with capitalization
+            publicKey,
+            keyType
         });
+        
+        console.log(`Public key uploaded for ${socket.username}`);
     });
-
-    // Handle secure message exchange
-    socket.on('secure-message', (data) => {
+    
+    // Request public key of another user
+    socket.on('request-public-key', (targetUserId) => {
+        const userKey = userKeys.get(targetUserId);
+        if (userKey) {
+            socket.emit('receive-public-key', {
+                userId: targetUserId,
+                username: userKey.username, // Original username with capitalization
+                publicKey: userKey.publicKey,
+                keyType: userKey.keyType
+            });
+        }
+    });
+    
+    // Enhanced messaging with timestamp, nonce, and optional signature
+    socket.on('send-message', (data) => {
         const {
-            roomId,
-            encryptedAESKey,
             encryptedMessage,
-            signature,
+            encryptedAESKey,
             timestamp,
             nonce,
-            recipientId
+            signature,
+            targetUserId
         } = data;
-
-        // Verify required fields
-        if (!roomId || !encryptedMessage || !timestamp || !nonce) {
-            socket.emit('error', { message: 'Invalid message format' });
+        
+        // Verify timestamp to prevent replay attacks (within 5 minutes)
+        const now = Date.now();
+        const msgTime = new Date(timestamp).getTime();
+        if (Math.abs(now - msgTime) > 300000) {
+            socket.emit('error', 'Message timestamp invalid');
             return;
         }
-
-        // Check for replay attacks
-        if (store.isNonceUsed(nonce)) {
-            socket.emit('error', { message: 'Message replay detected' });
-            return;
-        }
-
-        // Check timestamp (allow 5 minute window)
-        const messageTime = new Date(timestamp);
-        const now = new Date();
-        const timeDiff = Math.abs(now - messageTime);
-        if (timeDiff > 5 * 60 * 1000) {
-            socket.emit('error', { message: 'Message timestamp invalid' });
-            return;
-        }
-
-        // Add nonce to prevent replay
-        store.addNonce(nonce);
-
-        // Log the encrypted message
-        store.logEncryptedMessage(roomId, encryptedMessage, {
-            senderId: socket.user.id,
-            recipientId,
-            timestamp: messageTime,
-            signature,
-            nonce,
-            hasSignature: !!signature
-        });
-
-        // Forward message to room
+        
+        // Store message with metadata
         const messageData = {
-            senderId: socket.user.id,
-            senderEmail: socket.user.email,
-            encryptedAESKey,
+            from: socket.userId,
+            fromUsername: socket.username, // Original username with capitalization
+            to: targetUserId,
             encryptedMessage,
-            signature,
+            encryptedAESKey,
             timestamp,
             nonce,
-            recipientId
+            signature,
+            serverTimestamp: new Date()
         };
-
-        if (recipientId) {
-            // Direct message to specific user
-            socket.to(roomId).emit('secure-message', messageData);
-        } else {
-            // Broadcast to room
-            socket.to(roomId).emit('secure-message', messageData);
+        
+        // Log encrypted message (compliance)
+        chatLogs.push({
+            type: 'message',
+            from: socket.userId,
+            fromUsername: socket.username, // Original username with capitalization
+            to: targetUserId,
+            timestamp: new Date(),
+            encrypted: true,
+            nonce: nonce
+        });
+        
+        // Forward to target user
+        const targetSocket = [...io.sockets.sockets.values()]
+            .find(s => s.userId === targetUserId);
+            
+        if (targetSocket) {
+            targetSocket.emit('receive-message', messageData);
         }
-
-        store.logUserAction(socket.user.id, 'send_message', ip, { roomId, recipientId });
     });
-
-    // Handle key exchange requests
-    socket.on('request-public-key', (userId) => {
-        const publicKey = store.getPublicKey(userId);
-        if (publicKey) {
-            socket.emit('public-key-response', { userId, publicKey });
-        } else {
-            socket.emit('error', { message: 'User not found' });
-        }
+    
+    // Get list of online users with their public keys
+    socket.on('get-online-users', () => {
+        const onlineUsers = [...io.sockets.sockets.values()]
+            .map(s => ({
+                userId: s.userId,
+                username: s.username, // Original username with capitalization
+                hasPublicKey: userKeys.has(s.userId)
+            }))
+            .filter(user => user.userId !== socket.userId);
+            
+        socket.emit('online-users', onlineUsers);
     });
-
-    // Handle typing indicators
-    socket.on('typing', (data) => {
-        socket.to(data.roomId).emit('user-typing', {
-            userId: socket.user.id,
-            email: socket.user.email,
-            isTyping: data.isTyping
+    
+    socket.on('disconnect', () => {
+        console.log(`User ${socket.username} disconnected`);
+        
+        // Log disconnection
+        chatLogs.push({
+            type: 'auth',
+            username: socket.username, // Original username with capitalization
+            email: socket.userId,
+            action: 'disconnect',
+            timestamp: new Date()
         });
     });
-
-    // Handle disconnection
-    socket.on('disconnect', () => {
-        console.log(`User ${socket.user.email} disconnected`);
-        store.logUserAction(socket.user.id, 'socket_disconnect', ip);
-        store.activeConnections.delete(socket.id);
-    });
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'healthy', 
-        timestamp: new Date().toISOString(),
-        activeConnections: store.activeConnections.size
-    });
+// Admin endpoint to view logs (for compliance)
+app.get('/api/admin/logs', (req, res) => {
+    // In production, add proper admin authentication
+    res.json(chatLogs.slice(-100)); // Last 100 entries
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-});
-
-// Start server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+const PORT = process.env.PORT || 3001;
+http.listen(PORT, () => {
     console.log(`SecureChat server running on port ${PORT}`);
-    console.log('Security features enabled:');
-    console.log('- User authentication with JWT');
-    console.log('- RSA/ECC public key exchange');
-    console.log('- AES message encryption');
-    console.log('- Digital signatures');
-    console.log('- Replay protection with nonces');
-    console.log('- Comprehensive logging');
-    console.log('- Rate limiting');
-    console.log('- Security headers');
 });
-
-module.exports = app;

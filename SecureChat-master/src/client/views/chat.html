@@ -1,950 +1,479 @@
-<!-- <!DOCTYPE html>
-
-<!-- 	
-	This file is rendered by express.js, when the home url of the chat is opened in a browser.
-	It includes jQuery, socket.io.js (it is automatically served by the socket.io library), 
-	and a few more JavaScript files that you should check out.
--->
-
-<html>
-
-<head>
-	<title>Secure Chat</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<link rel="icon" href="img/favicon.ico">
-	<!--===============================================================================================-->
-	<!-- meyer-reset CSS -->
-	<link rel='stylesheet' type='text/css' href='css/reset.min.css'>
-	<!-- font-awesome CSS -->
-	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
-	<!-- Login form CSS -->
-	<link rel="stylesheet" type="text/css" href="css/login.css">
-	<!-- Core CSS -->
-	<link rel='stylesheet' type='text/css' href='css/stylesheet.css'>
-	<!--===============================================================================================-->
-</head>
-
-<body>
-	<!-- Login Section -->
-	<div class="limiter">
-		<div class="container-login100">
-			<div class="wrap-login100">
-				<div id="loginForm" class="login100-form validate-form">
-					<span class="login100-form-logo">
-						<img id="yourAvatar" src="img/unnamed.png">
-					</span>
-
-					<span class="login100-form-title">Register</span>
-
-					<div class="wrap-input100 validate-input" data-validate="Enter username">
-						<input id="yourName" class="input100" type="text" name="username" placeholder="Username">
-						<span class="focus-input100"></span>
-					</div>
-
-					<div class="wrap-input100 validate-input" data-validate="Enter email">
-						<input id="yourEmail" class="input100" type="email" name="email" placeholder="Email">
-						<span class="focus-input100"></span>
-					</div>
-
-					<div class="wrap-input100 validate-input" data-validate="Enter password">
-						<input id="yourPass" class="input100" type="password" name="pass" placeholder="Password">
-						<span class="focus-input100"></span>
-					</div>
-
-					<div class="container-login100-form-btn">
-						<button id="loginButton" class="login100-form-btn">
-							Login
-						</button>
-					</div>
-
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- .Login Section -->
-
-	<!-- Chat Section -->
-	<div id="frame" style="display: none;">
-		<div id="sidepanel">
-			<div id="profile">
-				<div class="wrap">
-					<img id="profile-img" src="img/unnamed.png" class="online" />
-					<p id="myUsername">My Name</p>
-					<i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
-					<div id="expanded">
-						<label for="email">
-							<i class="fa fa-at" aria-hidden="true"></i>
-						</label>
-						<input id="myEmail" name="email" type="text" value="email@provider.com" />
-					</div>
-				</div>
-			</div>
-			<div id="search">
-				<label for="">
-					<i class="fa fa-search" aria-hidden="true"></i>
-				</label>
-				<input type="text" placeholder="Search contacts...">
-			</div>
-			<div id="contacts">
-				<ul id="userContacts"></ul>
-				<ul id="channelContacts"></ul>
-			</div>
-			<div id="bottom-bar">
-				<button id="addchannel">
-					<i class="fa fa-group fa-fw" aria-hidden="true"></i>
-					<span>Add Channel</span>
-				</button>
-				<button id="settings">
-					<i class="fa fa-cog fa-fw" aria-hidden="true"></i>
-					<span>Settings</span>
-				</button>
-			</div>
-		</div>
-		<div class="content">
-			<div class="contact-profile">
-				<img id="channel-profile-img" src="img/unnamed.png" />
-				<p id="channel-profile-name">...</p>
-				<span id="channel-user-typing">is typing...</span>
-			</div>
-			<div class="messages">
-				<ul></ul>
-			</div>
-			<div class="message-input">
-				<div class="wrap">
-					<input type="text" placeholder="Write your message..." />
-					<i class="fa fa-paperclip attachment" aria-hidden="true"></i>
-					<button class="submit">
-						<i class="fa fa-paper-plane" aria-hidden="true"></i>
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- .Chat Section -->
-
-
-	<!--===============================================================================================-->
-	<!-- jQuery Js -->
-	<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
-	<!-- Socket.io Js -->
-	<script type="text/javascript" src="js/socket.io.js"></script>
-	<!-- Crypto Js for AES and Hash -->
-	<script type="text/javascript" src="js/crypto-js/crypto-js.js"></script>
-	<!-- JSEncrypt for RSA  -->
-	<script type="text/javascript" src="js/jsencrypt.min.js"></script>
-	<!-- Client Cryptology Lib Js -->
-	<script type="text/javascript" src="js/crypto.js"></script>
-	<!-- Client core Js -->
-	<script type="text/javascript" src="js/client.js"></script>
-	<!--===============================================================================================-->
-</body>
-
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureChat - Enhanced Security</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>SecureChat Enhanced</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.2/jsencrypt.min.js"></script>
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; }
         
-        .auth-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
         
-        .auth-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+        .auth-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .auth-form h2 { margin-bottom: 20px; color: #333; }
+        .auth-form input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; }
+        .auth-form button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .auth-form button:hover { background: #0056b3; }
+        .auth-form .toggle { text-align: center; margin-top: 15px; }
+        .auth-form .toggle a { color: #007bff; text-decoration: none; cursor: pointer; }
         
-        .chat-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            height: 90vh;
-            margin: 5vh auto;
-        }
+        .chat-container { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: 600px; display: none; }
+        .chat-header { padding: 20px; background: #007bff; color: white; border-radius: 8px 8px 0 0; }
+        .chat-body { display: flex; height: 540px; }
         
-        .chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 20px 20px 0 0;
-            padding: 1rem;
-        }
+        .users-panel { width: 250px; border-right: 1px solid #eee; padding: 15px; overflow-y: auto; }
+        .users-panel h3 { margin-bottom: 15px; color: #333; }
+        .user-item { padding: 10px; margin: 5px 0; background: #f8f9fa; border-radius: 4px; cursor: pointer; }
+        .user-item:hover { background: #e9ecef; }
+        .user-item.active { background: #007bff; color: white; }
         
-        .messages-container {
-            height: 60vh;
-            overflow-y: auto;
-            padding: 1rem;
-            background-color: #f8f9fa;
-        }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 70%; }
+        .message.sent { background: #007bff; color: white; margin-left: auto; }
+        .message.received { background: #f1f1f1; }
+        .message-info { font-size: 12px; opacity: 0.7; margin-top: 5px; }
         
-        .message {
-            margin-bottom: 1rem;
-            animation: fadeIn 0.3s ease-in;
-        }
+        .message-input { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        .message-input input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .message-input button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
         
-        .message.sent {
-            text-align: right;
-        }
+        .status { padding: 10px; background: #d4edda; color: #155724; border-radius: 4px; margin: 10px 0; }
+        .error { background: #f8d7da; color: #721c24; }
         
-        .message.received {
-            text-align: left;
-        }
+        .key-status { padding: 10px; background: #fff3cd; color: #856404; border-radius: 4px; margin: 10px 0; }
         
-        .message-bubble {
-            display: inline-block;
-            max-width: 70%;
-            padding: 0.8rem 1.2rem;
-            border-radius: 18px;
-            word-wrap: break-word;
-            position: relative;
-        }
-        
-        .message.sent .message-bubble {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .message.received .message-bubble {
-            background: #e9ecef;
-            color: #333;
-        }
-        
-        .message-meta {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 0.3rem;
-        }
-        
-        .encryption-status {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #28a745;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-        }
-        
-        .typing-indicator {
-            padding: 0.5rem 1rem;
-            background: rgba(108, 117, 125, 0.1);
-            border-radius: 15px;
-            margin: 0.5rem;
-            font-style: italic;
-            color: #6c757d;
-        }
-        
-        .security-info {
-            background: rgba(40, 167, 69, 0.1);
-            border: 1px solid rgba(40, 167, 69, 0.3);
-            border-radius: 10px;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-        }
-        
-        .key-status {
-            font-size: 0.9rem;
-            color: #28a745;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .signature-verified {
-            color: #28a745;
-        }
-        
-        .signature-failed {
-            color: #dc3545;
-        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <!-- Authentication Screen -->
-    <div id="authScreen" class="auth-container">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-4">
-                    <div class="auth-card p-4">
-                        <div class="text-center mb-4">
-                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
-                            <h2>SecureChat</h2>
-                            <p class="text-muted">End-to-End Encrypted Messaging</p>
-                        </div>
-                        
-                        <!-- Login Form -->
-                        <div id="loginForm">
-                            <form id="loginFormElement">
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="loginEmail" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="loginPassword" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100 mb-3">
-                                    <span id="loginSpinner" class="loading d-none"></span>
-                                    Login
-                                </button>
-                            </form>
-                            <div class="text-center">
-                                <a href="#" id="showRegister">Don't have an account? Register</a>
-                            </div>
-                        </div>
-                        
-                        <!-- Register Form -->
-                        <div id="registerForm" class="d-none">
-                            <form id="registerFormElement">
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="registerEmail" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="registerPassword" required minlength="8">
-                                    <div class="form-text">Minimum 8 characters</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Confirm Password</label>
-                                    <input type="password" class="form-control" id="confirmPassword" required>
-                                </div>
-                                <button type="submit" class="btn btn-success w-100 mb-3">
-                                    <span id="registerSpinner" class="loading d-none"></span>
-                                    Register & Generate Keys
-                                </button>
-                            </form>
-                            <div class="text-center">
-                                <a href="#" id="showLogin">Already have an account? Login</a>
-                            </div>
-                        </div>
-                        
-                        <div id="authError" class="alert alert-danger d-none"></div>
-                        <div id="authSuccess" class="alert alert-success d-none"></div>
-                    </div>
-                </div>
+    <div class="container">
+        <!-- Authentication Form -->
+        <div id="authForm" class="auth-form">
+            <h2 id="authTitle">Login to SecureChat</h2>
+            <form id="loginForm">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="authButton">Login</button>
+            </form>
+            <div class="toggle">
+                <span id="toggleText">Don't have an account? </span>
+                <a id="toggleLink">Register here</a>
             </div>
         </div>
-    </div>
-    
-    <!-- Chat Screen -->
-    <div id="chatScreen" class="d-none">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-8 offset-md-2">
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <h4 class="mb-0">
-                                        <i class="fas fa-lock me-2"></i>
-                                        Secure Chat Room
-                                    </h4>
-                                    <small id="userInfo"></small>
-                                </div>
-                                <div class="col-auto">
-                                    <button class="btn btn-outline-light btn-sm" id="logoutBtn">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="p-3">
-                            <div class="security-info">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="key-status">
-                                            <i class="fas fa-key me-1"></i>
-                                            <span id="keyStatus">Generating keys...</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="key-status">
-                                            <i class="fas fa-users me-1"></i>
-                                            <span id="connectionStatus">Connecting...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="messages-container" id="messagesContainer">
-                                <!-- Messages will be displayed here -->
-                            </div>
-                            
-                            <div id="typingIndicator" class="typing-indicator d-none"></div>
-                            
-                            <div class="row">
-                                <div class="col">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="messageInput" 
-                                               placeholder="Type your secure message..." disabled>
-                                        <button class="btn btn-primary" id="sendBtn" disabled>
-                                            <i class="fas fa-paper-plane"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status hidden"></div>
+        <div id="keyStatus" class="key-status hidden"></div>
+
+        <!-- Chat Interface -->
+        <div id="chatContainer" class="chat-container">
+            <div class="chat-header">
+                <h2>SecureChat Enhanced</h2>
+                <p>End-to-End Encrypted Messaging</p>
+                <button id="logoutBtn" style="float: right; padding: 5px 15px; background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 3px; cursor: pointer;">Logout</button>
+            </div>
+            <div class="chat-body">
+                <div class="users-panel">
+                    <h3>Online Users</h3>
+                    <div id="usersList"></div>
+                </div>
+                <div class="chat-main">
+                    <div id="messages" class="messages"></div>
+                    <div class="message-input">
+                        <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                        <button id="sendBtn" disabled>Send</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.2/jsencrypt.min.js"></script>
-    
     <script>
-        class SecureChatClient {
+        class SecureChat {
             constructor() {
                 this.socket = null;
-                this.user = null;
-                this.token = null;
-                this.rsaKeypair = null;
+                this.currentUser = null;
+                this.sessionId = null;
+                this.isRegistering = false;
+                this.activeChat = null;
+                this.keyPair = null;
                 this.publicKeys = new Map();
-                this.roomId = 'general';
-                this.typingTimeout = null;
+                this.messageNonces = new Set();
                 
                 this.initializeEventListeners();
+                this.generateKeyPair();
             }
-            
+
             initializeEventListeners() {
-                // Authentication forms
-                document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+                // Auth form
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
                     e.preventDefault();
-                    this.handleLogin();
+                    this.handleAuth();
                 });
-                
-                document.getElementById('registerFormElement').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.handleRegister();
+
+                document.getElementById('toggleLink').addEventListener('click', () => {
+                    this.toggleAuthMode();
                 });
-                
-                document.getElementById('showRegister').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.showRegisterForm();
-                });
-                
-                document.getElementById('showLogin').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.showLoginForm();
-                });
-                
-                // Chat functionality
-                document.getElementById('messageInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.sendMessage();
-                    } else {
-                        this.handleTyping();
-                    }
-                });
-                
+
+                // Chat
                 document.getElementById('sendBtn').addEventListener('click', () => {
                     this.sendMessage();
                 });
-                
+
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+
                 document.getElementById('logoutBtn').addEventListener('click', () => {
                     this.logout();
                 });
             }
-            
-            async generateRSAKeypair() {
-                const encrypt = new JSEncrypt({default_key_size: 2048});
-                encrypt.getKey();
-                
-                return {
-                    publicKey: encrypt.getPublicKey(),
-                    privateKey: encrypt.getPrivateKey()
+
+            async generateKeyPair() {
+                const crypt = new JSEncrypt({default_key_size: 2048});
+                this.keyPair = {
+                    private: crypt.getPrivateKey(),
+                    public: crypt.getPublicKey()
                 };
+                
+                this.showKeyStatus('RSA key pair generated successfully');
             }
-            
-            async handleRegister() {
-                const email = document.getElementById('registerEmail').value;
-                const password = document.getElementById('registerPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                if (password !== confirmPassword) {
-                    this.showError('Passwords do not match');
-                    return;
-                }
-                
-                document.getElementById('registerSpinner').classList.remove('d-none');
-                
-                try {
-                    // Generate RSA keypair
-                    this.showSuccess('Generating cryptographic keys...');
-                    this.rsaKeypair = await this.generateRSAKeypair();
-                    
-                    const response = await fetch('/api/register', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            email,
-                            password,
-                            publicKey: this.rsaKeypair.publicKey
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        this.showSuccess('Registration successful! Please login.');
-                        setTimeout(() => this.showLoginForm(), 2000);
-                    } else {
-                        this.showError(data.error);
-                    }
-                } catch (error) {
-                    this.showError('Registration failed: ' + error.message);
-                } finally {
-                    document.getElementById('registerSpinner').classList.add('d-none');
+
+            toggleAuthMode() {
+                this.isRegistering = !this.isRegistering;
+                const title = document.getElementById('authTitle');
+                const button = document.getElementById('authButton');
+                const toggleText = document.getElementById('toggleText');
+                const toggleLink = document.getElementById('toggleLink');
+
+                if (this.isRegistering) {
+                    title.textContent = 'Register for SecureChat';
+                    button.textContent = 'Register';
+                    toggleText.textContent = 'Already have an account? ';
+                    toggleLink.textContent = 'Login here';
+                } else {
+                    title.textContent = 'Login to SecureChat';
+                    button.textContent = 'Login';
+                    toggleText.textContent = "Don't have an account? ";
+                    toggleLink.textContent = 'Register here';
                 }
             }
-            
-            async handleLogin() {
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                
-                document.getElementById('loginSpinner').classList.remove('d-none');
-                
+
+            async handleAuth() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const endpoint = this.isRegistering ? '/api/register' : '/api/login';
+
                 try {
-                    const response = await fetch('/api/login', {
+                    const response = await fetch(endpoint, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password })
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.success) {
-                        this.token = data.token;
-                        this.user = data.user;
-                        
-                        // Recreate RSA keypair from stored public key
-                        const encrypt = new JSEncrypt();
-                        encrypt.setPublicKey(data.user.publicKey);
-                        
-                        // For demo, we'll generate a new private key
-                        // In production, private keys should be stored securely locally
-                        this.rsaKeypair = await this.generateRSAKeypair();
-                        
-                        this.showChatScreen();
-                        this.initializeSocket();
+                        if (this.isRegistering) {
+                            this.showStatus('Registration successful! Please login.', 'success');
+                            this.toggleAuthMode();
+                        } else {
+                            this.currentUser = data.email;
+                            this.sessionId = data.sessionId;
+                            this.connectSocket();
+                            this.showChatInterface();
+                        }
                     } else {
-                        this.showError(data.error);
+                        this.showStatus(data.error, 'error');
                     }
                 } catch (error) {
-                    this.showError('Login failed: ' + error.message);
-                } finally {
-                    document.getElementById('loginSpinner').classList.add('d-none');
+                    this.showStatus('Connection error: ' + error.message, 'error');
                 }
             }
-            
-            async initializeSocket() {
+
+            connectSocket() {
                 this.socket = io({
-                    auth: {
-                        token: this.token
-                    }
+                    auth: { sessionId: this.sessionId }
                 });
-                
+
                 this.socket.on('connect', () => {
-                    document.getElementById('connectionStatus').textContent = 'Connected';
-                    document.getElementById('keyStatus').textContent = 'Keys ready';
+                    this.showStatus('Connected to secure chat', 'success');
+                    this.uploadPublicKey();
+                    this.requestOnlineUsers();
+                });
+
+                this.socket.on('online-users', (users) => {
+                    this.updateUsersList(users);
+                });
+
+                this.socket.on('new-public-key', (data) => {
+                    this.publicKeys.set(data.email, {
+                        key: data.publicKey,
+                        algorithm: data.algorithm
+                    });
+                    this.showKeyStatus(`Public key received from ${data.email}`);
+                });
+
+                this.socket.on('receive-public-key', (data) => {
+                    this.publicKeys.set(data.email, {
+                        key: data.publicKey,
+                        algorithm: data.algorithm
+                    });
+                    this.showKeyStatus(`Public key received from ${data.email}`);
+                    this.enableMessaging();
+                });
+
+                this.socket.on('receive-message', (data) => {
+                    this.handleIncomingMessage(data);
+                });
+
+                this.socket.on('disconnect', () => {
+                    this.showStatus('Disconnected from server', 'error');
+                });
+            }
+
+            uploadPublicKey() {
+                this.socket.emit('upload-public-key', {
+                    publicKey: this.keyPair.public,
+                    algorithm: 'RSA-2048'
+                });
+                this.showKeyStatus('Public key uploaded to server');
+            }
+
+            requestOnlineUsers() {
+                this.socket.emit('get-online-users');
+            }
+
+            updateUsersList(users) {
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = '';
+
+                users.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'user-item';
+                    userDiv.textContent = user;
+                    userDiv.addEventListener('click', () => {
+                        this.selectUser(user);
+                    });
+                    usersList.appendChild(userDiv);
+                });
+            }
+
+            selectUser(email) {
+                // Remove active class from all users
+                document.querySelectorAll('.user-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Add active class to selected user
+                event.target.classList.add('active');
+                this.activeChat = email;
+
+                // Request public key if not available
+                if (!this.publicKeys.has(email)) {
+                    this.socket.emit('request-public-key', email);
+                    this.showKeyStatus(`Requesting public key from ${email}...`);
+                } else {
+                    this.enableMessaging();
+                }
+            }
+
+            enableMessaging() {
+                if (this.activeChat && this.publicKeys.has(this.activeChat)) {
                     document.getElementById('messageInput').disabled = false;
                     document.getElementById('sendBtn').disabled = false;
-                    
-                    // Join the general room
-                    this.socket.emit('join-room', this.roomId);
-                    
-                    // Request public keys of other users
-                    this.loadPublicKeys();
-                });
-                
-                this.socket.on('disconnect', () => {
-                    document.getElementById('connectionStatus').textContent = 'Disconnected';
-                    document.getElementById('messageInput').disabled = true;
-                    document.getElementById('sendBtn').disabled = true;
-                });
-                
-                this.socket.on('user-joined', (userData) => {
-                    this.publicKeys.set(userData.userId, userData.publicKey);
-                    this.addSystemMessage(`${userData.email} joined the chat`);
-                });
-                
-                this.socket.on('secure-message', (messageData) => {
-                    this.handleIncomingMessage(messageData);
-                });
-                
-                this.socket.on('user-typing', (data) => {
-                    this.showTypingIndicator(data);
-                });
-                
-                this.socket.on('public-key-response', (data) => {
-                    this.publicKeys.set(data.userId, data.publicKey);
-                });
-                
-                this.socket.on('error', (error) => {
-                    console.error('Socket error:', error);
-                    this.addSystemMessage('Error: ' + error.message, 'danger');
-                });
-            }
-            
-            async loadPublicKeys() {
-                try {
-                    const response = await fetch('/api/public-keys', {
-                        headers: {
-                            'Authorization': `Bearer ${this.token}`
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    if (data.publicKeys) {
-                        Object.entries(data.publicKeys).forEach(([userId, publicKey]) => {
-                            this.publicKeys.set(userId, publicKey);
-                        });
-                    }
-                } catch (error) {
-                    console.error('Failed to load public keys:', error);
+                    this.showKeyStatus(`Secure channel established with ${this.activeChat}`);
                 }
             }
-            
+
             generateAESKey() {
                 return CryptoJS.lib.WordArray.random(256/8).toString();
             }
-            
+
             generateNonce() {
                 return CryptoJS.lib.WordArray.random(128/8).toString();
             }
-            
-            encryptWithAES(message, key) {
-                return CryptoJS.AES.encrypt(message, key).toString();
-            }
-            
-            decryptWithAES(encryptedMessage, key) {
-                const bytes = CryptoJS.AES.decrypt(encryptedMessage, key);
-                return bytes.toString(CryptoJS.enc.Utf8);
-            }
-            
-            encryptWithRSA(message, publicKey) {
-                const encrypt = new JSEncrypt();
-                encrypt.setPublicKey(publicKey);
-                return encrypt.encrypt(message);
-            }
-            
-            decryptWithRSA(encryptedMessage, privateKey) {
-                const decrypt = new JSEncrypt();
-                decrypt.setPrivateKey(privateKey);
-                return decrypt.decrypt(encryptedMessage);
-            }
-            
-            signMessage(message, privateKey) {
-                const sign = new JSEncrypt();
-                sign.setPrivateKey(privateKey);
-                return sign.sign(message, CryptoJS.SHA256, "sha256");
-            }
-            
-            verifySignature(message, signature, publicKey) {
-                const verify = new JSEncrypt();
-                verify.setPublicKey(publicKey);
-                return verify.verify(message, signature, CryptoJS.SHA256);
-            }
-            
-            async sendMessage() {
+
+            sendMessage() {
                 const messageInput = document.getElementById('messageInput');
                 const message = messageInput.value.trim();
-                
-                if (!message) return;
-                
+
+                if (!message || !this.activeChat) return;
+
                 try {
-                    // Generate AES key for this message
+                    // Generate AES key and nonce
                     const aesKey = this.generateAESKey();
                     const nonce = this.generateNonce();
                     const timestamp = new Date().toISOString();
-                    
+
                     // Encrypt message with AES
-                    const encryptedMessage = this.encryptWithAES(message, aesKey);
-                    
-                    // For demo, we'll encrypt AES key with our own public key
-                    // In real implementation, you'd encrypt with recipient's public key
-                    let encryptedAESKey = null;
-                    if (this.rsaKeypair && this.rsaKeypair.publicKey) {
-                        encryptedAESKey = this.encryptWithRSA(aesKey, this.rsaKeypair.publicKey);
-                    }
-                    
-                    // Sign the message
-                    const messageToSign = encryptedMessage + timestamp + nonce;
-                    const signature = this.signMessage(messageToSign, this.rsaKeypair.privateKey);
-                    
-                    // Send secure message
-                    this.socket.emit('secure-message', {
-                        roomId: this.roomId,
+                    const encryptedMessage = CryptoJS.AES.encrypt(message, aesKey).toString();
+
+                    // Encrypt AES key with recipient's RSA public key
+                    const recipientPublicKey = this.publicKeys.get(this.activeChat).key;
+                    const encrypt = new JSEncrypt();
+                    encrypt.setPublicKey(recipientPublicKey);
+                    const encryptedAESKey = encrypt.encrypt(aesKey);
+
+                    // Sign message with sender's private key
+                    const messageHash = CryptoJS.SHA256(message + timestamp + nonce).toString();
+                    const sign = new JSEncrypt();
+                    sign.setPrivateKey(this.keyPair.private);
+                    const signature = sign.sign(messageHash, CryptoJS.SHA256, "sha256");
+
+                    // Send encrypted message
+                    this.socket.emit('send-message', {
+                        to: this.activeChat,
                         encryptedAESKey,
                         encryptedMessage,
                         signature,
                         timestamp,
                         nonce
                     });
-                    
+
                     // Display message locally
-                    this.displayMessage({
-                        senderId: this.user.id,
-                        senderEmail: this.user.email,
-                        message: message,
-                        timestamp,
-                        isSent: true,
-                        isEncrypted: true,
-                        signatureVerified: true
-                    });
-                    
+                    this.displayMessage(message, 'sent', timestamp);
                     messageInput.value = '';
-                    
+
                 } catch (error) {
-                    console.error('Failed to send message:', error);
-                    this.addSystemMessage('Failed to send message: ' + error.message, 'danger');
+                    this.showStatus('Encryption failed: ' + error.message, 'error');
                 }
             }
-            
-            async handleIncomingMessage(messageData) {
+
+            handleIncomingMessage(data) {
                 try {
-                    const {
-                        senderId,
-                        senderEmail,
-                        encryptedAESKey,
-                        encryptedMessage,
-                        signature,
-                        timestamp,
-                        nonce
-                    } = messageData;
+                    const { from, encryptedAESKey, encryptedMessage, signature, timestamp, nonce } = data;
+
+                    // Check for replay attack
+                    const messageId = `${from}-${timestamp}-${nonce}`;
+                    if (this.messageNonces.has(messageId)) {
+                        this.showStatus('Replay attack detected - message rejected', 'error');
+                        return;
+                    }
+                    this.messageNonces.add(messageId);
+
+                    // Decrypt AES key with our private key
+                    const decrypt = new JSEncrypt();
+                    decrypt.setPrivateKey(this.keyPair.private);
+                    const aesKey = decrypt.decrypt(encryptedAESKey);
+
+                    if (!aesKey) {
+                        throw new Error('Failed to decrypt AES key');
+                    }
+
+                    // Decrypt message with AES key
+                    const decryptedBytes = CryptoJS.AES.decrypt(encryptedMessage, aesKey);
+                    const message = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+                    if (!message) {
+                        throw new Error('Failed to decrypt message');
+                    }
+
+                    // Verify signature
+                    const messageHash = CryptoJS.SHA256(message + timestamp + nonce).toString();
+                    const senderPublicKey = this.publicKeys.get(from)?.key;
                     
-                    let decryptedMessage = 'Encrypted message';
-                    let signatureVerified = false;
-                    
-                    // Try to decrypt if we have the keys
-                    if (encryptedAESKey && this.rsaKeypair) {
-                        try {
-                            const aesKey = this.decryptWithRSA(encryptedAESKey, this.rsaKeypair.privateKey);
-                            if (aesKey) {
-                                decryptedMessage = this.decryptWithAES(encryptedMessage, aesKey);
-                            }
-                        } catch (decryptError) {
-                            console.warn('Failed to decrypt message:', decryptError);
+                    if (senderPublicKey) {
+                        const verify = new JSEncrypt();
+                        verify.setPublicKey(senderPublicKey);
+                        const isValid = verify.verify(messageHash, signature, CryptoJS.SHA256);
+                        
+                        if (!isValid) {
+                            this.showStatus('Message signature verification failed', 'error');
+                            return;
                         }
                     }
-                    
-                    // Verify signature if present
-                    if (signature && this.publicKeys.has(senderId)) {
-                        const senderPublicKey = this.publicKeys.get(senderId);
-                        const messageToVerify = encryptedMessage + timestamp + nonce;
-                        signatureVerified = this.verifySignature(messageToVerify, signature, senderPublicKey);
-                    }
-                    
-                    this.displayMessage({
-                        senderId,
-                        senderEmail,
-                        message: decryptedMessage,
-                        timestamp,
-                        isSent: false,
-                        isEncrypted: true,
-                        signatureVerified,
-                        hasSignature: !!signature
-                    });
-                    
+
+                    // Display decrypted message
+                    this.displayMessage(message, 'received', timestamp, from);
+
                 } catch (error) {
-                    console.error('Failed to handle incoming message:', error);
+                    this.showStatus('Decryption failed: ' + error.message, 'error');
                 }
             }
-            
-            displayMessage(messageData) {
-                const messagesContainer = document.getElementById('messagesContainer');
+
+            displayMessage(message, type, timestamp, sender = null) {
+                const messagesDiv = document.getElementById('messages');
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${messageData.isSent ? 'sent' : 'received'}`;
-                
-                const time = new Date(messageData.timestamp).toLocaleTimeString();
-                
-                let signatureIcon = '';
-                if (messageData.hasSignature) {
-                    signatureIcon = messageData.signatureVerified 
-                        ? '<i class="fas fa-check-circle signature-verified ms-1" title="Signature verified"></i>'
-                        : '<i class="fas fa-times-circle signature-failed ms-1" title="Signature verification failed"></i>';
-                }
-                
-                messageDiv.innerHTML = `
-                    <div class="message-bubble">
-                        ${messageData.isEncrypted ? '<div class="encryption-status"><i class="fas fa-lock"></i></div>' : ''}
-                        <div>${this.escapeHtml(messageData.message)}</div>
-                        <div class="message-meta">
-                            ${messageData.isSent ? 'You' : messageData.senderEmail} • ${time}
-                            ${signatureIcon}
-                        </div>
-                    </div>
-                `;
-                
-                messagesContainer.appendChild(messageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                messageDiv.className = `message ${type}`;
+
+                const messageText = document.createElement('div');
+                messageText.textContent = message;
+
+                const messageInfo = document.createElement('div');
+                messageInfo.className = 'message-info';
+                const time = new Date(timestamp).toLocaleTimeString();
+                messageInfo.textContent = sender ? `${sender} - ${time}` : time;
+
+                messageDiv.appendChild(messageText);
+                messageDiv.appendChild(messageInfo);
+                messagesDiv.appendChild(messageDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
-            
-            addSystemMessage(message, type = 'info') {
-                const messagesContainer = document.getElementById('messagesContainer');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'text-center';
-                messageDiv.innerHTML = `
-                    <div class="badge bg-${type} mb-2">
-                        <i class="fas fa-info-circle me-1"></i>
-                        ${this.escapeHtml(message)}
-                    </div>
-                `;
-                messagesContainer.appendChild(messageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            showChatInterface() {
+                document.getElementById('authForm').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
             }
-            
-            handleTyping() {
-                if (this.typingTimeout) {
-                    clearTimeout(this.typingTimeout);
-                }
-                
-                this.socket.emit('typing', { roomId: this.roomId, isTyping: true });
-                
-                this.typingTimeout = setTimeout(() => {
-                    this.socket.emit('typing', { roomId: this.roomId, isTyping: false });
+
+            showStatus(message, type) {
+                const statusDiv = document.getElementById('statusMessage');
+                statusDiv.textContent = message;
+                statusDiv.className = `status ${type === 'error' ? 'error' : ''}`;
+                statusDiv.classList.remove('hidden');
+
+                setTimeout(() => {
+                    statusDiv.classList.add('hidden');
+                }, 5000);
+            }
+
+            showKeyStatus(message) {
+                const keyStatusDiv = document.getElementById('keyStatus');
+                keyStatusDiv.textContent = message;
+                keyStatusDiv.classList.remove('hidden');
+
+                setTimeout(() => {
+                    keyStatusDiv.classList.add('hidden');
                 }, 3000);
             }
-            
-            showTypingIndicator(data) {
-                const indicator = document.getElementById('typingIndicator');
-                if (data.isTyping) {
-                    indicator.textContent = `${data.email} is typing...`;
-                    indicator.classList.remove('d-none');
-                } else {
-                    indicator.classList.add('d-none');
+
+            async logout() {
+                if (this.sessionId) {
+                    await fetch('/api/logout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionId: this.sessionId })
+                    });
                 }
-            }
-            
-            showLoginForm() {
-                document.getElementById('loginForm').classList.remove('d-none');
-                document.getElementById('registerForm').classList.add('d-none');
-                this.clearMessages();
-            }
-            
-            showRegisterForm() {
-                document.getElementById('loginForm').classList.add('d-none');
-                document.getElementById('registerForm').classList.remove('d-none');
-                this.clearMessages();
-            }
-            
-            showChatScreen() {
-                document.getElementById('authScreen').classList.add('d-none');
-                document.getElementById('chatScreen').classList.remove('d-none');
-                document.getElementById('userInfo').textContent = `Logged in as: ${this.user.email}`;
-            }
-            
-            logout() {
+
                 if (this.socket) {
                     this.socket.disconnect();
                 }
-                
-                this.token = null;
-                this.user = null;
-                this.rsaKeypair = null;
+
+                // Reset state
+                this.currentUser = null;
+                this.sessionId = null;
+                this.activeChat = null;
                 this.publicKeys.clear();
-                
-                document.getElementById('chatScreen').classList.add('d-none');
-                document.getElementById('authScreen').classList.remove('d-none');
-                
-                // Clear chat messages
-                document.getElementById('messagesContainer').innerHTML = '';
-                
-                this.showLoginForm();
-            }
-            
-            showError(message) {
-                const errorDiv = document.getElementById('authError');
-                const successDiv = document.getElementById('authSuccess');
-                
-                errorDiv.textContent = message;
-                errorDiv.classList.remove('d-none');
-                successDiv.classList.add('d-none');
-                
-                setTimeout(() => {
-                    errorDiv.classList.add('d-none');
-                }, 5000);
-            }
-            
-            showSuccess(message) {
-                const errorDiv = document.getElementById('authError');
-                const successDiv = document.getElementById('authSuccess');
-                
-                successDiv.textContent = message;
-                successDiv.classList.remove('d-none');
-                errorDiv.classList.add('d-none');
-                
-                setTimeout(() => {
-                    successDiv.classList.add('d-none');
-                }, 5000);
-            }
-            
-            clearMessages() {
-                document.getElementById('authError').classList.add('d-none');
-                document.getElementById('authSuccess').classList.add('d-none');
-            }
-            
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+                this.messageNonces.clear();
+
+                // Show auth form
+                document.getElementById('authForm').style.display = 'block';
+                document.getElementById('chatContainer').style.display = 'none';
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
             }
         }
-        
+
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', () => {
-            new SecureChatClient();
-        });
+        const app = new SecureChat();
     </script>
 </body>
 </html>
